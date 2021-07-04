@@ -103,4 +103,9 @@ mod test {
 
     }
 
+    #[test]
+    fn match_string_success_should_change_index() {
+
+    }
+
 }
