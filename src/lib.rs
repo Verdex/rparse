@@ -100,12 +100,27 @@ mod test {
 
     #[test]
     fn match_string_failure_should_not_change_index() {
+        let mut input = Input::new("string");
 
+        let result = input.match_string("yy");
+
+        assert!( matches!( result, Err(_) ) );
+
+        let result = input.match_string("string");
+
+        assert!( matches!( result, Ok(_) ) );
     }
 
     #[test]
     fn match_string_success_should_change_index() {
+        let mut input = Input::new("string");
 
+        let result = input.match_string("st");
+
+        assert!( matches!( result, Ok(_) ) );
+
+        let result = input.match_string("ring");
+
+        assert!( matches!( result, Ok(_) ) );
     }
-
 }
