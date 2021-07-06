@@ -7,7 +7,7 @@ use input::Input;
 
 pub enum ParseRule {
     Any,                                                            // Char(char) 
-    MatchString(String),                                            // ()
+    MatchString(String),                                            // NIL 
     InvokeRule(String),                                             // Field
     ZeroOrMore(Box<ParseRule>),                                     // Table { list }
     OneOrMore(Box<ParseRule>),                                      // Table { list }
@@ -42,6 +42,31 @@ fn apply(rule : &ParseRule, rules : &HashMap<String, ParseRule>, input : &mut In
             Ok(Data::Nil)
         },
         ParseRule::InvokeRule(target_rule) => data_field(target_rule, lookup_apply(target_rule, rules, input)?),
+        ParseRule::ZeroOrMore(target_rule) => {
+            let mut datas = vec![];
+            loop {
+                match apply(target_rule, rules, input) {
+                    Ok(data) => datas.push(data),
+                    Err(_) => break,
+                }
+            }
+            Ok(Data::Table { list: datas, structure: vec![] })
+        },
+        ParseRule::OneOrMore(target_rule) => {
+            let mut datas = vec![];
+
+            let data = apply(target_rule, rules, input)?;
+            
+            datas.push(data);
+
+            loop {
+                match apply(target_rule, rules, input) {
+                    Ok(data) => datas.push(data),
+                    Err(_) => break,
+                }
+            }
+            Ok(Data::Table { list: datas, structure: vec![] })
+        },
         _ => Err(()),
     }
 }
