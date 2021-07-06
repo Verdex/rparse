@@ -67,6 +67,12 @@ fn apply(rule : &ParseRule, rules : &HashMap<String, ParseRule>, input : &mut In
             }
             Ok(Data::Table { list: datas, structure: vec![] })
         },
+        ParseRule::ZeroOrOne(target_rule) => {
+            match apply(target_rule, rules, input) {
+                Ok(data) => Ok(Data::Table { list: vec![data], structure: vec![] }),
+                Err(_) => Ok(Data::Table { list: vec![], structure: vec![] }),
+            }
+        },
         _ => Err(()),
     }
 }
