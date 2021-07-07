@@ -5,10 +5,22 @@ pub struct Input<'a> {
     cs : CharIndices<'a>,
 }
 
+pub struct RestorePoint<'a> {
+    cs : CharIndices<'a>,
+}
+
 impl<'a> Input<'a> {
 
     pub fn new(s : &'a str) -> Input<'a> {
         Input { cs : s.char_indices() }
+    }
+
+    pub fn restore_point(&self) -> RestorePoint<'a> {
+        RestorePoint { cs: self.cs }
+    }
+
+    pub fn restore(&mut self, rp : RestorePoint<'a>) {
+        self.cs = rp.cs;
     }
 
     pub fn get_char(&mut self) -> Result<char, ()> {
