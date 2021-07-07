@@ -73,6 +73,31 @@ fn apply(rule : &ParseRule, rules : &HashMap<String, ParseRule>, input : &mut In
                 Err(_) => Ok(Data::Table { list: vec![], structure: vec![] }),
             }
         },
+        ParseRule::Or(target_rules) => {
+            for target_rule in target_rules {
+                match apply(target_rule, rules, input) {
+                    Ok(data) => return Ok(data),
+                    Err(_) => { },
+                }
+            }
+            Err(())
+        },
+        ParseRule::And(target_rules) => {
+            let rp = input.restore_point();
+            let mut list = vec![];
+            let mut structure = vec![]; 
+            for target_rule in target_rules {
+                match apply(target_rule, rules, input) {
+                    Ok(Data::Field(field)) => structure.push(*field),
+                    Ok(data) => list.push(data),
+                    Err(_) => {
+                        input.restore(rp);
+                        return Err(());
+                    },
+                }
+            }
+            Ok(Data::Table {list, structure})
+        },
         _ => Err(()),
     }
 }
