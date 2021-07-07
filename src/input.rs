@@ -16,7 +16,7 @@ impl<'a> Input<'a> {
     }
 
     pub fn restore_point(&self) -> RestorePoint<'a> {
-        RestorePoint { cs: self.cs }
+        RestorePoint { cs: self.cs.clone() }
     }
 
     pub fn restore(&mut self, rp : RestorePoint<'a>) {
