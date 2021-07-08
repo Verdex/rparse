@@ -14,7 +14,6 @@ pub enum ParseRule {
     ZeroOrOne(Box<ParseRule>),                                      // Table { list }
     Or(Vec<ParseRule>),                                             // Data
     And(Vec<ParseRule>),                                            // Table { list, structure }
-    Until { target : Box<ParseRule>, end : Box<ParseRule> },        // Table { list }
 }
 
 pub struct Field {
@@ -98,7 +97,6 @@ fn apply(rule : &ParseRule, rules : &HashMap<String, ParseRule>, input : &mut In
             }
             Ok(Data::Table {list, structure})
         },
-        _ => Err(()),
     }
 }
 
