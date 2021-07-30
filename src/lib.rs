@@ -319,4 +319,6 @@ mod test {
 
         Ok(())
     }
+
+    // TODO make sure failures do not consume input
 }
