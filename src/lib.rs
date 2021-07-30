@@ -105,6 +105,198 @@ fn lookup_apply(rule : &str, rules : &HashMap<String, ParseRule>, input : &mut I
     apply(x, rules, input)
 }
 
-pub fn parse(start_rule : &str, rules : HashMap<String, ParseRule>, input : &str) -> Result<Data, ()> {
+pub fn parse(start_rule : &str, rules : &HashMap<String, ParseRule>, input : &str) -> Result<Data, ()> {
     lookup_apply(start_rule, &rules, &mut Input::new(input))
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn should_parse_any() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        rules.insert("any".to_string(), ParseRule::Any);
+
+        let data = parse("any", &rules, "string")?;
+
+        assert!( matches!(data, Data::Char('s') ) );
+
+        Ok(())
+    }
+
+    #[test]
+    fn should_parse_string() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        rules.insert("match_string".to_string(), ParseRule::MatchString("this[]".to_string()));
+
+        let data = parse("match_string", &rules, "this[]")?;
+
+        assert!( matches!(data, Data::Nil ) );
+
+        Ok(())
+    }
+
+    #[test]
+    fn should_parse_string_with_extra() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        rules.insert("match_string".to_string(), ParseRule::MatchString("this[]".to_string()));
+
+        let data = parse("match_string", &rules, "this[]blah")?;
+
+        assert!( matches!(data, Data::Nil ) );
+
+        Ok(())
+    }
+
+    #[test]
+    fn should_parse_any_and_any() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        rules.insert("any".to_string(), ParseRule::And(vec! [ ParseRule::Any, ParseRule::Any ]));
+
+        let data = parse("any", &rules, "this[]blah")?;
+
+        match data {
+            Data::Table { list, .. } => {
+                assert_eq!(list.len(), 2);
+                assert!( matches!( list[0], Data::Char('t')));
+                assert!( matches!( list[1], Data::Char('h')));
+            },
+            _ => assert!(false),
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn should_parse_any_or_any() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        rules.insert("any".to_string(), ParseRule::Or(vec! [ ParseRule::Any, ParseRule::Any ]));
+
+        let data = parse("any", &rules, "this[]blah")?;
+
+        assert!( matches!( data, Data::Char('t')));
+
+        Ok(())
+    }
+
+
+    #[test]
+    fn should_parse_zero_zero_or_more_a() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        rules.insert("zero_or_more".to_string(), ParseRule::ZeroOrMore(Box::new(ParseRule::MatchString("a".to_string()))));
+
+        let data = parse("zero_or_more", &rules, "this[]blah")?;
+
+        match data {
+            Data::Table { list, .. } => {
+                assert_eq!(list.len(), 0);
+            },
+            _ => assert!(false),
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn should_parse_more_zero_or_more_a() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        rules.insert("zero_or_more".to_string(), ParseRule::ZeroOrMore(Box::new(ParseRule::MatchString("a".to_string()))));
+
+        let data = parse("zero_or_more", &rules, "aathis[]blah")?;
+
+        match data {
+            Data::Table { list, .. } => {
+                assert_eq!(list.len(), 2);
+                assert!(matches!(list[0], Data::Nil));
+                assert!(matches!(list[1], Data::Nil));
+            },
+            _ => assert!(false),
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn should_parse_one_one_or_more_a() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        rules.insert("one_or_more".to_string(), ParseRule::OneOrMore(Box::new(ParseRule::MatchString("a".to_string()))));
+
+        let data = parse("one_or_more", &rules, "athis[]blah")?;
+
+        match data {
+            Data::Table { list, .. } => {
+                assert_eq!(list.len(), 1);
+                assert!(matches!(list[0], Data::Nil));
+            },
+            _ => assert!(false),
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn should_parse_more_one_or_more_a() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        rules.insert("zero_or_more".to_string(), ParseRule::OneOrMore(Box::new(ParseRule::MatchString("a".to_string()))));
+
+        let data = parse("zero_or_more", &rules, "aathis[]blah")?;
+
+        match data {
+            Data::Table { list, .. } => {
+                assert_eq!(list.len(), 2);
+                assert!(matches!(list[0], Data::Nil));
+                assert!(matches!(list[1], Data::Nil));
+            },
+            _ => assert!(false),
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn should_parse_zero_zero_or_one_a() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        rules.insert("zero_or_one".to_string(), ParseRule::ZeroOrOne(Box::new(ParseRule::MatchString("a".to_string()))));
+
+        let data = parse("zero_or_one", &rules, "this[]blah")?;
+
+        match data {
+            Data::Table { list, .. } => {
+                assert_eq!(list.len(), 0);
+            },
+            _ => assert!(false),
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn should_parse_one_zero_or_one_a() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        rules.insert("zero_or_one".to_string(), ParseRule::ZeroOrOne(Box::new(ParseRule::MatchString("a".to_string()))));
+
+        let data = parse("zero_or_one", &rules, "athis[]blah")?;
+
+        match data {
+            Data::Table { list, .. } => {
+                assert_eq!(list.len(), 1);
+                assert!(matches!(list[0], Data::Nil));
+            },
+            _ => assert!(false),
+        }
+
+        Ok(())
+    }
 }
