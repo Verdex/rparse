@@ -299,4 +299,24 @@ mod test {
 
         Ok(())
     }
+
+    #[test]
+    fn should_parse_invoke() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        rules.insert("any".to_string(), ParseRule::Any);
+        rules.insert("invoke".to_string(), ParseRule::InvokeRule("any".to_string()));
+
+        let data = parse("invoke", &rules, "athis[]blah")?;
+
+        match data {
+            Data::Field(f) => {
+                assert_eq!(f.rule, "any");
+                assert!( matches!(f.data, Data::Char('a')));
+            },
+            _ => assert!(false),
+        }
+
+        Ok(())
+    }
 }
