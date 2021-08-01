@@ -5,6 +5,7 @@ mod input;
 
 use input::Input;
 
+
 pub enum ParseRule {
     Any,                                                            // Char(char) 
     MatchString(String),                                            // NIL 
@@ -15,6 +16,63 @@ pub enum ParseRule {
     Or(Vec<ParseRule>),                                             // Data
     And(Vec<ParseRule>),                                            // Table { list, structure }
 }
+
+#[macro_export]
+macro_rules! Any {
+    () => {
+        ::rparse::ParseRule::Any
+    };
+}
+
+#[macro_export]
+macro_rules! MatchString {
+    ($e:expr) => {
+        ::rparse::ParseRule::MatchString( $e.to_string() )
+    };
+}
+
+#[macro_export]
+macro_rules! InvokeRule {
+    ($e:expr) => {
+        ::rparse::ParseRule::InvokeRule( $e.to_string() )
+    };
+}
+
+#[macro_export]
+macro_rules! ZeroOrMore {
+    ($e:expr) => {
+        ::rparse::ParseRule::ZeroOrMore( Box::new( $e ) )
+    };
+}
+
+#[macro_export]
+macro_rules! OneOrMore {
+    ($e:expr) => {
+        ::rparse::ParseRule::OneOrMore( Box::new( $e ) )
+    };
+}
+
+#[macro_export]
+macro_rules! ZeroOrOne {
+    ($e:expr) => {
+        ::rparse::ParseRule::ZeroOrOne( Box::new( $e ) )
+    };
+}
+
+#[macro_export]
+macro_rules! Or {
+    ($($e:expr),+) => {
+        ::rparse::ParseRule::Or( vec![ $($e),+ ] )
+    };
+}
+
+#[macro_export]
+macro_rules! And {
+    ($($e:expr),+) => {
+        ::rparse::ParseRule::And( vec![ $($e),+ ] )
+    };
+}
+
 
 pub struct Field {
     pub rule : String,
