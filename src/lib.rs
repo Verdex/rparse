@@ -320,5 +320,79 @@ mod test {
         Ok(())
     }
 
-    // TODO make sure failures do not consume input
+    #[test]
+    fn and_failure_doesnt_consume_input() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        // blah works, but the other fails
+        // the any parse in the or should grab a 'b'
+        
+        rules.insert("main".to_string(), 
+            ParseRule::Or( vec![ ParseRule::And( vec![ ParseRule::MatchString("blah".to_string())
+                                                     , ParseRule::MatchString("other".to_string())
+                                                     ] )
+                               , ParseRule::Any
+                               ] ));
+
+        let data = parse("main", &rules, "blahcow")?;
+
+        assert!( matches!( data, Data::Char('b') ) );
+
+        Ok(())
+    }
+
+    #[test]
+    fn or_failure_doesnt_consume_input() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        rules.insert("main".to_string(), 
+            ParseRule::Or( vec![ ParseRule::Or( vec![ ParseRule::MatchString("blah".to_string())
+                                                    , ParseRule::MatchString("other".to_string())
+                                                    ] )
+                               , ParseRule::Any
+                               ] ));
+
+        let data = parse("main", &rules, "blarg")?;
+
+        assert!( matches!( data, Data::Char('b') ) );
+
+        Ok(())
+    }
+
+    #[test]
+    fn one_or_more_failure_doesnt_consume_input() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        rules.insert("main".to_string(), 
+            ParseRule::Or( vec![ ParseRule::OneOrMore( Box::new( ParseRule::And( vec![ ParseRule::Any
+                                                                                     , ParseRule::MatchString("x".to_string()) 
+                                                                                     ] ) ) )
+                               , ParseRule::Any
+                               ] ));
+
+        let data = parse("main", &rules, "blarg")?;
+
+        assert!( matches!( data, Data::Char('b') ) );
+
+        Ok(())
+    }
+
+    #[test]
+    fn invoke_failure_doesnt_consume_input() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        rules.insert("rule".to_string(), ParseRule::And( vec![ ParseRule::Any
+                                                             , ParseRule::MatchString("x".to_string())
+                                                             ]));
+        rules.insert("main".to_string(), 
+            ParseRule::Or( vec![ ParseRule::InvokeRule( "rule".to_string() )
+                               , ParseRule::Any
+                               ] ));
+
+        let data = parse("main", &rules, "blarg")?;
+
+        assert!( matches!( data, Data::Char('b') ) );
+
+        Ok(())
+    }
 }
