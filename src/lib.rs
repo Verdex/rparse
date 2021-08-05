@@ -81,15 +81,6 @@ macro_rules! on {
     };
 }
 
-#[macro_export]
-macro_rules! when {
-    ($($p:pat),+) => {
-        ::rparse::ParseRule::Match(|c| match c {
-            $($p),+
-        })
-    };
-}
-
 pub struct Field {
     pub rule : String,
     pub data : Data,
