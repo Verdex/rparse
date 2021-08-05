@@ -19,56 +19,56 @@ pub enum ParseRule {
 }
 
 #[macro_export]
-macro_rules! Any {
+macro_rules! any {
     () => {
         ::rparse::ParseRule::Any
     };
 }
 
 #[macro_export]
-macro_rules! MatchString {
+macro_rules! match_string {
     ($e:expr) => {
         ::rparse::ParseRule::MatchString( $e.to_string() )
     };
 }
 
 #[macro_export]
-macro_rules! InvokeRule {
+macro_rules! invoke_rule {
     ($e:expr) => {
         ::rparse::ParseRule::InvokeRule( $e.to_string() )
     };
 }
 
 #[macro_export]
-macro_rules! ZeroOrMore {
+macro_rules! zero_or_more {
     ($e:expr) => {
         ::rparse::ParseRule::ZeroOrMore( Box::new( $e ) )
     };
 }
 
 #[macro_export]
-macro_rules! OneOrMore {
+macro_rules! one_or_more {
     ($e:expr) => {
         ::rparse::ParseRule::OneOrMore( Box::new( $e ) )
     };
 }
 
 #[macro_export]
-macro_rules! ZeroOrOne {
+macro_rules! zero_or_one {
     ($e:expr) => {
         ::rparse::ParseRule::ZeroOrOne( Box::new( $e ) )
     };
 }
 
 #[macro_export]
-macro_rules! Or {
+macro_rules! or {
     ($($e:expr),+) => {
         ::rparse::ParseRule::Or( vec![ $($e),+ ] )
     };
 }
 
 #[macro_export]
-macro_rules! And {
+macro_rules! and {
     ($($e:expr),+) => {
         ::rparse::ParseRule::And( vec![ $($e),+ ] )
     };
