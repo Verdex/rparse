@@ -8,6 +8,7 @@ use input::Input;
 
 pub enum ParseRule {
     Any,                                                            // Char(char) 
+    Match(fn(char) -> bool),                                        // Char(char) 
     MatchString(String),                                            // NIL 
     InvokeRule(String),                                             // Field
     ZeroOrMore(Box<ParseRule>),                                     // Table { list }
@@ -94,6 +95,17 @@ fn data_field(rule : &str, data : Data) -> Result<Data, ()> {
 fn apply(rule : &ParseRule, rules : &HashMap<String, ParseRule>, input : &mut Input) -> Result<Data, ()> {
     match rule {
         ParseRule::Any => Ok(Data::Char(input.get_char()?)),
+        ParseRule::Match(f) => {
+            let rp = input.restore_point();
+            let c = input.get_char()?;
+            if f(c) {
+                Ok(Data::Char(c))
+            }
+            else {
+                input.restore(rp);
+                Err(())
+            }
+        }
         ParseRule::MatchString(target) => {
             input.match_string(target)?;
             Ok(Data::Nil)
@@ -178,6 +190,19 @@ mod test {
         rules.insert("any".to_string(), ParseRule::Any);
 
         let data = parse("any", &rules, "string")?;
+
+        assert!( matches!(data, Data::Char('s') ) );
+
+        Ok(())
+    }
+
+    #[test]
+    fn should_parse_match() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        rules.insert("match".to_string(), ParseRule::Match(|c| c == 's'));
+
+        let data = parse("match", &rules, "string")?;
 
         assert!( matches!(data, Data::Char('s') ) );
 
@@ -453,4 +478,21 @@ mod test {
 
         Ok(())
     }
+
+    #[test]
+    fn match_failure_doesnt_consume_input() -> Result<(), ()> {
+        let mut rules = HashMap::new();
+
+        rules.insert("main".to_string(), 
+            ParseRule::Or( vec![ ParseRule::Match(|c| c == 'x')
+                               , ParseRule::Any
+                               ] ));
+
+        let data = parse("main", &rules, "blahcow")?;
+
+        assert!( matches!( data, Data::Char('b') ) );
+
+        Ok(())
+    }
+
 }
