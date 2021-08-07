@@ -2,7 +2,9 @@
 use std::collections::HashMap;
 
 mod input;
+mod data;
 
+pub use data::{Data, Field};
 use input::Input;
 
 
@@ -79,18 +81,6 @@ macro_rules! on {
     ($e:expr) => {
         ::rparse::ParseRule::Match( $e )
     };
-}
-
-pub struct Field {
-    pub rule : String,
-    pub data : Data,
-}
-
-pub enum Data {
-    Nil,
-    Char(char),
-    Field(Box<Field>),
-    Table { list : Vec<Data>, structure : Vec<Field> },
 }
 
 fn data_field(rule : &str, data : Data) -> Result<Data, ()> {
