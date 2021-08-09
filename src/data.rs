@@ -87,7 +87,7 @@ mod test {
 
     #[test]
     fn should_find_field() {
-        let data = Data::Field(Box::new( Field {rule: "rule".to_string(), data: Data::Nil} ));
+        let data = Data::Field { rule: "rule".to_string(), data: Box::new(Data::Nil) };
         let results = data.find(|d| match d {
             Data::Field { .. } => true,
             _ => false,
@@ -99,19 +99,19 @@ mod test {
 
     #[test]
     fn should_find_table() {
-        let data = Data::Table{ list: vec![], structure: vec![] };
+        let data = Data::List(vec![]);
         let results = data.find(|d| match d {
-            Data::Table { .. } => true,
+            Data::List(_) => true,
             _ => false,
         });
 
         assert_eq!( results.len(), 1 );
-        assert!( matches!( results[0], Data::Table { .. } ) );
+        assert!( matches!( results[0], Data::List(_) ) );
     }
 
     #[test]
-    fn should_find_table_nested_nil() {
-        let data = Data::Table { list: vec![Data::Nil], structure: vec![] };
+    fn should_find_list_nested_nil() {
+        let data = Data::List( vec![Data::Nil] );
        
         let results = data.find(|d| match d {
             Data::Nil => true,

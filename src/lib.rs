@@ -238,7 +238,7 @@ mod test {
         let data = parse("any", &rules, "this[]blah")?;
 
         match data {
-            Data::Table { list, .. } => {
+            Data::List(list) => {
                 assert_eq!(list.len(), 2);
                 assert!( matches!( list[0], Data::Char('t')));
                 assert!( matches!( list[1], Data::Char('h')));
@@ -272,7 +272,7 @@ mod test {
         let data = parse("zero_or_more", &rules, "this[]blah")?;
 
         match data {
-            Data::Table { list, .. } => {
+            Data::List(list) => {
                 assert_eq!(list.len(), 0);
             },
             _ => assert!(false),
@@ -290,7 +290,7 @@ mod test {
         let data = parse("zero_or_more", &rules, "aathis[]blah")?;
 
         match data {
-            Data::Table { list, .. } => {
+            Data::List(list) => {
                 assert_eq!(list.len(), 2);
                 assert!(matches!(list[0], Data::Nil));
                 assert!(matches!(list[1], Data::Nil));
@@ -310,7 +310,7 @@ mod test {
         let data = parse("one_or_more", &rules, "athis[]blah")?;
 
         match data {
-            Data::Table { list, .. } => {
+            Data::List(list) => {
                 assert_eq!(list.len(), 1);
                 assert!(matches!(list[0], Data::Nil));
             },
@@ -329,7 +329,7 @@ mod test {
         let data = parse("zero_or_more", &rules, "aathis[]blah")?;
 
         match data {
-            Data::Table { list, .. } => {
+            Data::List( list ) => {
                 assert_eq!(list.len(), 2);
                 assert!(matches!(list[0], Data::Nil));
                 assert!(matches!(list[1], Data::Nil));
@@ -349,7 +349,7 @@ mod test {
         let data = parse("zero_or_one", &rules, "this[]blah")?;
 
         match data {
-            Data::Table { list, .. } => {
+            Data::List( list ) => {
                 assert_eq!(list.len(), 0);
             },
             _ => assert!(false),
@@ -367,7 +367,7 @@ mod test {
         let data = parse("zero_or_one", &rules, "athis[]blah")?;
 
         match data {
-            Data::Table { list, .. } => {
+            Data::List(list) => {
                 assert_eq!(list.len(), 1);
                 assert!(matches!(list[0], Data::Nil));
             },
@@ -387,9 +387,9 @@ mod test {
         let data = parse("invoke", &rules, "athis[]blah")?;
 
         match data {
-            Data::Field(f) => {
-                assert_eq!(f.rule, "any");
-                assert!( matches!(f.data, Data::Char('a')));
+            Data::Field { rule, data } => {
+                assert_eq!(rule, "any");
+                assert!( matches!(*data, Data::Char('a')));
             },
             _ => assert!(false),
         }
