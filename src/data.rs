@@ -27,7 +27,7 @@ impl Data {
                 results.push( vec![it.clone()] );
                 let list = match it {
                     Data::List(list) => list,
-                    _ => panic!("Data::find expects Table"),
+                    _ => panic!("Data::find expects List"),
                 };
                 for l in list {
                     results.push( l.find(test) );
