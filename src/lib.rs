@@ -4,7 +4,7 @@ use std::collections::HashMap;
 mod input;
 mod data;
 
-pub use data::{Data, Field};
+pub use data::Data;
 use input::Input;
 
 
@@ -13,11 +13,11 @@ pub enum ParseRule {
     Match(fn(char) -> bool),                                        // Char(char) 
     MatchString(String),                                            // NIL 
     InvokeRule(String),                                             // Field
-    ZeroOrMore(Box<ParseRule>),                                     // Table { list }
-    OneOrMore(Box<ParseRule>),                                      // Table { list }
-    ZeroOrOne(Box<ParseRule>),                                      // Table { list }
+    ZeroOrMore(Box<ParseRule>),                                     // List
+    OneOrMore(Box<ParseRule>),                                      // List 
+    ZeroOrOne(Box<ParseRule>),                                      // List
     Or(Vec<ParseRule>),                                             // Data
-    And(Vec<ParseRule>),                                            // Table { list, structure }
+    And(Vec<ParseRule>),                                            // List
 }
 
 #[macro_export]
@@ -85,7 +85,7 @@ macro_rules! on {
 
 fn data_field(rule : &str, data : Data) -> Result<Data, ()> {
     let rule = rule.to_string();
-    Ok(Data::Field( Box::new(Field { rule, data })))
+    Ok(Data::Field {rule, data: Box::new(data) })
 }
 
 fn apply(rule : &ParseRule, rules : &HashMap<String, ParseRule>, input : &mut Input) -> Result<Data, ()> {
@@ -115,7 +115,7 @@ fn apply(rule : &ParseRule, rules : &HashMap<String, ParseRule>, input : &mut In
                     Err(_) => break,
                 }
             }
-            Ok(Data::Table { list: datas, structure: vec![] })
+            Ok(Data::List(datas))
         },
         ParseRule::OneOrMore(target_rule) => {
             let mut datas = vec![];
@@ -130,12 +130,12 @@ fn apply(rule : &ParseRule, rules : &HashMap<String, ParseRule>, input : &mut In
                     Err(_) => break,
                 }
             }
-            Ok(Data::Table { list: datas, structure: vec![] })
+            Ok(Data::List(datas))
         },
         ParseRule::ZeroOrOne(target_rule) => {
             match apply(target_rule, rules, input) {
-                Ok(data) => Ok(Data::Table { list: vec![data], structure: vec![] }),
-                Err(_) => Ok(Data::Table { list: vec![], structure: vec![] }),
+                Ok(data) => Ok(Data::List(vec![data])),
+                Err(_) => Ok(Data::List(vec![])),
             }
         },
         ParseRule::Or(target_rules) => {
@@ -150,10 +150,8 @@ fn apply(rule : &ParseRule, rules : &HashMap<String, ParseRule>, input : &mut In
         ParseRule::And(target_rules) => {
             let rp = input.restore_point();
             let mut list = vec![];
-            let mut structure = vec![]; 
             for target_rule in target_rules {
                 match apply(target_rule, rules, input) {
-                    Ok(Data::Field(field)) => structure.push(*field),
                     Ok(data) => list.push(data),
                     Err(_) => {
                         input.restore(rp);
@@ -161,7 +159,7 @@ fn apply(rule : &ParseRule, rules : &HashMap<String, ParseRule>, input : &mut In
                     },
                 }
             }
-            Ok(Data::Table {list, structure})
+            Ok(Data::List(list))
         },
     }
 }
